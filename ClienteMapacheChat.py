@@ -7,6 +7,8 @@ from tkinter import simpledialog, scrolledtext
 DIRECCION_SERVIDOR = "192.168.106.84"
 PUERTO_SERVIDOR = 12345
 
+#COMENTARIO_PRUEBA
+
 #conectamos al servidor con un socket apuntando hacia su ip y el puerto
 cliente_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 cliente_socket.connect((DIRECCION_SERVIDOR, PUERTO_SERVIDOR))
