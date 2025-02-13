@@ -59,5 +59,3 @@ boton_enviar.pack(side=tk.RIGHT)
 threading.Thread(target=recibir_mensajes, daemon=True).start()
 
 ventana_cliente.mainloop()
-
-print "Hola"
