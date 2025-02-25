@@ -2,12 +2,35 @@ import socket  # esta bilbioteca me sirve para manejar conexiones de red
 import threading  # biblitoteca para crear hilos de ejecucion
 import tkinter as tk  # biblioteca apra la interfaz grafia
 from tkinter import scrolledtext  # biblioteca para la caja de chat con desplazamiento
+from datetime import datetime
 
 #Configuracion para los grupos de chat (Puertos)
 PUERTOS = [12345, 12346]  # lista de grupos (puertos) de chat en los que el servidor escuchara conexiones
 servidores = {}  # diccionario para almacenar los sockets de los servidores
 clientes_por_puerto = {}  # diccionario para almacenar los clientes conectados a cada grupo (puerto)
+lista_comandos = {"/ver_miembros", "/fecha_hora"}
 
+#Aqui esta el método para ejecutar los comandos
+def comandos(comando, puerto):
+    if comando == "/ver_miembros":
+        mensaje = "----Lista de miembros------\n"
+        complemento = ""
+        for i in clientes_por_puerto[puerto]:
+            nombre = i.recv(1024).decode()
+            complemento = nombre
+            mensaje = mensaje + complemento + "\n"
+        agregar_mensaje_servidor(mensaje)  #mostramos en la interfaz del servidor
+        enviar_a_grupo(mensaje, puerto)  #enviamos el mensaje a los clientes del mismo grupo (puerto) 
+    elif comando == "/fecha_hora":
+        ahora = datetime.now()
+        mensaje = "Servidor: " + str(ahora)
+        agregar_mensaje_servidor(mensaje)  #mostramos en la interfaz del servidor
+        enviar_a_grupo(mensaje, puerto)  #enviamos el mensaje a los clientes del mismo grupo (puerto) 
+    else:
+        mensaje = "Servidor: Ese comando esta mal chavo"
+        agregar_mensaje_servidor(mensaje)  #mostramos en la interfaz del servidor
+        enviar_a_grupo(mensaje, puerto)  #enviamos el mensaje a los clientes del mismo grupo (puerto)   
+        
 #esta funcion sirve para enviar mensajes a todos los clientes conectados a un puerto (grupo) específico
 #recibe de parametro el mensaje y el grupo (puerto) al que s eva reenviar
 def enviar_a_grupo(mensaje, puerto):
@@ -30,11 +53,14 @@ def manejar_cliente(conexion, direccion, puerto):
         
         while True:
             mensaje = conexion.recv(1024).decode()  #recibimos el mensaje del cliente
-            if not mensaje: #si no hay mensaje
-                break  #salimos si el mensaje esta vacio
-            mensaje_formateado = f"{nombre_usuario}: {mensaje}"  #damos un pequeño formato al mensaje con el nombre del usuario
-            agregar_mensaje_servidor(mensaje_formateado)  #mostramos en la interfaz del servidor
-            enviar_a_grupo(mensaje_formateado, puerto)  #enviamos el mensaje a los clientes del mismo grupo (puerto)
+            if mensaje.startswith("/"): #Se revisa si el mensaje empieza "/" para sidentificar comandos
+                comandos(mensaje, puerto) #Se llama la función
+            else:
+                if not mensaje: #si no hay mensaje
+                    break  #salimos si el mensaje esta vacio
+                mensaje_formateado = f"{nombre_usuario}: {mensaje}"  #damos un pequeño formato al mensaje con el nombre del usuario
+                agregar_mensaje_servidor(mensaje_formateado)  #mostramos en la interfaz del servidor
+                enviar_a_grupo(mensaje_formateado, puerto)  #enviamos el mensaje a los clientes del mismo grupo (puerto)        
     except:
         pass
     finally:
