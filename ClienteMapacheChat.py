@@ -4,7 +4,9 @@ import tkinter as tk  # biblioteca apra la interfaz grafia
 from tkinter import simpledialog, scrolledtext
 
 #apuntamos el cliente al servidor con su ip y el grupo (puerto)
+
 DIRECCION_SERVIDOR = "10.0.16.39"
+
 PUERTO_SERVIDOR = 12345
 
 #COMENTARIO_PRUEBA

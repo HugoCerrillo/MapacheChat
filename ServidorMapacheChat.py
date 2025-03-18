@@ -14,18 +14,37 @@ lista_comandos = {"/ver_miembros", "/fecha_hora"}
 def comandos(comando, puerto):
     if comando == "/ver_miembros":
         mensaje = "----Lista de miembros------\n"
-        complemento = ""
-        for i in clientes_por_puerto[puerto]:
-            nombre = i.recv(1024).decode()
-            complemento = nombre
-            mensaje = mensaje + complemento + "\n"
-        agregar_mensaje_servidor(mensaje)  #mostramos en la interfaz del servidor
-        enviar_a_grupo(mensaje, puerto)  #enviamos el mensaje a los clientes del mismo grupo (puerto) 
+        for nombre in clientes_por_puerto[puerto].values():  # Obtener solo los nombres
+            mensaje += nombre + "\n"
+        agregar_mensaje_servidor(mensaje)
+        enviar_a_grupo(mensaje, puerto)
     elif comando == "/fecha_hora":
         ahora = datetime.now()
         mensaje = "Servidor: " + str(ahora)
         agregar_mensaje_servidor(mensaje)  #mostramos en la interfaz del servidor
-        enviar_a_grupo(mensaje, puerto)  #enviamos el mensaje a los clientes del mismo grupo (puerto) 
+        enviar_a_grupo(mensaje, puerto)  #enviamos el mensaje a los clientes del mismo grupo (puerto)
+    #elif comando.startswith("/expulsar_@"):
+        #nombre_a_expulsar = comando.replace("/expulsar_@", "").strip()
+
+        # Buscar el socket del usuario a expulsar
+        #socket_a_expulsar = None
+        #for socket_cliente, nombre in clientes_por_puerto[puerto].items():
+            #if nombre == nombre_a_expulsar:
+                #socket_a_expulsar = socket_cliente
+                #break
+    
+        #if socket_a_expulsar:
+            #mensaje_expulsion = f"Servidor: {nombre_a_expulsar} ha sido expulsado del grupo."
+            #agregar_mensaje_servidor(mensaje_expulsion)
+            #enviar_a_grupo(mensaje_expulsion, puerto)
+
+            # Cerrar la conexión y eliminar del diccionario
+            #socket_a_expulsar.close()
+            #del clientes_por_puerto[puerto][socket_a_expulsar]
+        #else:
+            #mensaje_error = f"Servidor: No se encontró a {nombre_a_expulsar} en el grupo."
+            #agregar_mensaje_servidor(mensaje_error)
+            #enviar_a_grupo(mensaje_error, puerto)
     else:
         mensaje = "Servidor: Ese comando esta mal chavo"
         agregar_mensaje_servidor(mensaje)  #mostramos en la interfaz del servidor
@@ -39,14 +58,14 @@ def enviar_a_grupo(mensaje, puerto):
             cliente.sendall(mensaje.encode())  # enviamos el mensaje codificado a cada cliente
         except:
             cliente.close()  #cerrar la conexion si hay un error
-            clientes_por_puerto[puerto].remove(cliente)  #eliminar cliente de la lista si se desconecta
+            del clientes_por_puerto[puerto][cliente]  #eliminar cliente del diccionario si se desconecta
 
 #esta funcion nos sirve para manejar un cliente individual en un hilo separado
 #recibe de parametros la conexion, la direccion y el puerto (grupo)            
 def manejar_cliente(conexion, direccion, puerto):
     try:
         nombre_usuario = conexion.recv(1024).decode()  #al conectarse, recibimos el nombre del usuario al conectarse
-        clientes_por_puerto[puerto].append(conexion)  #agregar cliente a la lista del puerto (grupo)
+        clientes_por_puerto[puerto][conexion] = nombre_usuario  #agregar cliente al diccionario del puerto (grupo)
         mensaje_conexion = f"{nombre_usuario} se ha unido al grupo {puerto}."  # Notificar la conexión
         agregar_mensaje_servidor(mensaje_conexion)
         enviar_a_grupo(mensaje_conexion, puerto)  #hacemos una difusion para enviar el mensaje de conexion a todos los clientes del grupo
@@ -64,7 +83,7 @@ def manejar_cliente(conexion, direccion, puerto):
     except:
         pass
     finally:
-        clientes_por_puerto[puerto].remove(conexion)  #eliminamos cliente de la lista al desconectarse
+        del clientes_por_puerto[puerto][conexion]   #eliminamos cliente del diccionario al desconectarse
         mensaje_salida = f"{nombre_usuario} ha salido del grupo {puerto}."  #armamos un mensaje que indica la desconexion del usuario
         agregar_mensaje_servidor(mensaje_salida)
         enviar_a_grupo(mensaje_salida, puerto)  #enviamos el mensaje de salida a los clientes del grupo
@@ -77,7 +96,7 @@ def iniciar_servidor(puerto):
     servidor_socket.bind(("0.0.0.0", puerto))  #asociamos el socket a todas las interfaces de red y al puerto (grupo) especifico
     servidor_socket.listen(5)  #ponemos el servidor en modo escucha aceptando hasta 5 conexiones en espera
     servidores[puerto] = servidor_socket  #almacenar el socket del servidor en el diccionario
-    clientes_por_puerto[puerto] = []  #inicializar la lista de clientes para este puerto (grupo)
+    clientes_por_puerto[puerto] = {}  #inicializar la lista de clientes para este puerto (grupo)
     agregar_mensaje_servidor(f"Servidor escuchando en el puerto {puerto}...") #mandamos un mensaje informativo a la interfaz del servidor
     
     while True:
