@@ -5,7 +5,7 @@ from tkinter import simpledialog, scrolledtext
 
 #apuntamos el cliente al servidor con su ip y el grupo (puerto)
 
-DIRECCION_SERVIDOR = "10.0.16.39"
+DIRECCION_SERVIDOR = "10.0.16.30"
 
 PUERTO_SERVIDOR = 12345
 
