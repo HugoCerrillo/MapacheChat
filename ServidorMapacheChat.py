@@ -23,28 +23,6 @@ def comandos(comando, puerto):
         mensaje = "Servidor: " + str(ahora)
         agregar_mensaje_servidor(mensaje)  #mostramos en la interfaz del servidor
         enviar_a_grupo(mensaje, puerto)  #enviamos el mensaje a los clientes del mismo grupo (puerto)
-    #elif comando.startswith("/expulsar_@"):
-        #nombre_a_expulsar = comando.replace("/expulsar_@", "").strip()
-
-        # Buscar el socket del usuario a expulsar
-        #socket_a_expulsar = None
-        #for socket_cliente, nombre in clientes_por_puerto[puerto].items():
-            #if nombre == nombre_a_expulsar:
-                #socket_a_expulsar = socket_cliente
-                #break
-    
-        #if socket_a_expulsar:
-            #mensaje_expulsion = f"Servidor: {nombre_a_expulsar} ha sido expulsado del grupo."
-            #agregar_mensaje_servidor(mensaje_expulsion)
-            #enviar_a_grupo(mensaje_expulsion, puerto)
-
-            # Cerrar la conexión y eliminar del diccionario
-            #socket_a_expulsar.close()
-            #del clientes_por_puerto[puerto][socket_a_expulsar]
-        #else:
-            #mensaje_error = f"Servidor: No se encontró a {nombre_a_expulsar} en el grupo."
-            #agregar_mensaje_servidor(mensaje_error)
-            #enviar_a_grupo(mensaje_error, puerto)
     else:
         mensaje = "Servidor: Ese comando esta mal chavo"
         agregar_mensaje_servidor(mensaje)  #mostramos en la interfaz del servidor
